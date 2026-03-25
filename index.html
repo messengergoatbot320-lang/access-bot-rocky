@@ -6,15 +6,12 @@
 <title>Rocky Premium Panel</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 body{background:#f1f5f9;}
 .header{background:linear-gradient(135deg,#ef4444,#f97316);}
 .page{display:none;}
 .show{display:block;}
-.card{transition:.3s;}
-.card:hover{transform:translateY(-3px);}
 </style>
 </head>
 
@@ -22,15 +19,14 @@ body{background:#f1f5f9;}
 
 <!-- LOGIN -->
 <div id="login" class="h-screen flex items-center justify-center">
-<div class="bg-white p-8 rounded-2xl shadow w-80 text-center">
-<h1 class="text-xl font-bold mb-4">Login Panel</h1>
+<div class="bg-white p-6 rounded-xl shadow w-80 text-center">
+<h2 class="text-xl font-bold mb-4">Login Panel</h2>
 
-<input id="user" placeholder="Enter Gmail" class="w-full border p-2 rounded mb-2">
-<input id="pass" type="password" placeholder="Password" class="w-full border p-2 rounded mb-4">
+<input id="user" placeholder="Enter Gmail" class="w-full border p-2 mb-2 rounded">
+<input id="pass" type="password" placeholder="Password" class="w-full border p-2 mb-3 rounded">
 
 <button onclick="login()" class="w-full bg-red-500 text-white py-2 rounded">Login</button>
 
-<p class="text-xs mt-3">Use Gmail to login</p>
 </div>
 </div>
 
@@ -38,21 +34,21 @@ body{background:#f1f5f9;}
 <div id="app" class="hidden flex">
 
 <!-- Sidebar -->
-<div class="w-64 bg-white h-screen shadow p-4">
+<div class="w-60 bg-white h-screen p-4 shadow">
 
-<h1 class="font-bold text-lg mb-4">ROCKY PANEL</h1>
+<h1 class="font-bold mb-4">ROCKY PANEL</h1>
 
-<div class="bg-blue-100 p-3 rounded-xl mb-4">
-<p class="text-xs">Balance</p>
-<h2 id="bal" class="text-2xl font-bold">0 ৳</h2>
+<div class="bg-blue-100 p-3 rounded mb-3">
+<p>Balance</p>
+<h2 id="bal">0 ৳</h2>
 </div>
 
 <button onclick="addBalance()" class="w-full bg-green-500 text-white py-2 rounded mb-2">Recharge</button>
 <button onclick="logout()" class="w-full bg-red-500 text-white py-2 rounded">Logout</button>
 
-<div class="space-y-2 mt-4">
-<div onclick="openPage('home')" class="p-3 bg-red-500 text-white rounded cursor-pointer">Home</div>
-<div onclick="openPage('orders')" class="p-3 hover:bg-gray-100 rounded cursor-pointer">Orders</div>
+<div class="mt-4">
+<div onclick="openPage('home')" class="p-2 bg-red-500 text-white rounded mb-2">Home</div>
+<div onclick="openPage('orders')" class="p-2 bg-gray-200 rounded">Orders</div>
 </div>
 
 </div>
@@ -60,43 +56,22 @@ body{background:#f1f5f9;}
 <!-- CONTENT -->
 <div class="flex-1">
 
-<div class="header text-white p-4 flex justify-between">
+<div class="header text-white p-3 flex justify-between">
 <span>Dashboard</span>
 <span id="topBal">0 ৳</span>
 </div>
 
 <!-- HOME -->
-<div id="home" class="page show p-6">
+<div id="home" class="page show p-5">
 
-<div class="grid grid-cols-4 gap-3">
-
-<div onclick="order('Facebook')" class="card bg-blue-500 text-white p-4 rounded-xl text-center cursor-pointer">
-<i class="fab fa-facebook text-2xl"></i>
-<p>Facebook</p>
-</div>
-
-<div onclick="order('Instagram')" class="card bg-pink-500 text-white p-4 rounded-xl text-center cursor-pointer">
-<i class="fab fa-instagram text-2xl"></i>
-<p>Instagram</p>
-</div>
-
-<div onclick="order('YouTube')" class="card bg-red-500 text-white p-4 rounded-xl text-center cursor-pointer">
-<i class="fab fa-youtube text-2xl"></i>
-<p>YouTube</p>
-</div>
-
-<div onclick="order('TikTok')" class="card bg-black text-white p-4 rounded-xl text-center cursor-pointer">
-<i class="fab fa-tiktok text-2xl"></i>
-<p>TikTok</p>
-</div>
-
-</div>
+<button onclick="order('Facebook')" class="bg-blue-500 text-white p-3 rounded w-full mb-2">Facebook Order</button>
+<button onclick="order('YouTube')" class="bg-red-500 text-white p-3 rounded w-full mb-2">YouTube Order</button>
 
 </div>
 
 <!-- ORDERS -->
-<div id="orders" class="page p-6">
-<h2 class="font-bold mb-3">My Orders</h2>
+<div id="orders" class="page p-5">
+<h2 class="font-bold mb-2">Orders</h2>
 <div id="orderList"></div>
 </div>
 
@@ -105,34 +80,48 @@ body{background:#f1f5f9;}
 
 <script>
 
-// AUTO LOGIN
-if(localStorage.getItem("user")){
+// INIT
+let balance = parseInt(localStorage.getItem("bal")) || 0;
+let user = localStorage.getItem("user");
+
+// AUTO LOGIN FIX
+if(user){
 document.getElementById("login").style.display="none";
 document.getElementById("app").classList.remove("hidden");
 }
 
-// LOGIN
+// UPDATE BALANCE
+function updateBal(){
+document.getElementById("bal").innerText = balance + " ৳";
+document.getElementById("topBal").innerText = balance + " ৳";
+}
+updateBal();
+
+// LOGIN FIX
 function login(){
-let email=document.getElementById("user").value;
-let pass=document.getElementById("pass").value;
+let email = document.getElementById("user").value.trim();
+let pass = document.getElementById("pass").value.trim();
+
+if(!email || !pass){
+alert("Fill all fields!");
+return;
+}
 
 if(!email.includes("@gmail.com")){
 alert("Enter valid Gmail!");
 return;
 }
 
-if(pass.length<4){
-alert("Password minimum 4 digit!");
+if(pass.length < 4){
+alert("Password must be 4+");
 return;
 }
 
-localStorage.setItem("user",email);
-localStorage.setItem("pass",pass);
+// SAVE
+localStorage.setItem("user", email);
+localStorage.setItem("pass", pass);
 
-document.getElementById("login").style.display="none";
-document.getElementById("app").classList.remove("hidden");
-
-alert("Login Successful!");
+location.reload(); // FIXED
 }
 
 // LOGOUT
@@ -141,73 +130,64 @@ localStorage.clear();
 location.reload();
 }
 
-// BALANCE
-let balance=localStorage.getItem("bal")||0;
-updateBal();
-
-function updateBal(){
-document.getElementById("bal").innerText=balance+" ৳";
-document.getElementById("topBal").innerText=balance+" ৳";
-}
-
 // ADD BALANCE
 function addBalance(){
-let amount=prompt("Enter amount:");
-if(!amount)return;
+let amount = prompt("Enter amount:");
+if(!amount || isNaN(amount)) return;
 
-balance=parseInt(balance)+parseInt(amount);
-localStorage.setItem("bal",balance);
+balance += parseInt(amount);
+localStorage.setItem("bal", balance);
 updateBal();
 }
 
 // ORDER
 function order(name){
-let qty=prompt("Enter Quantity:");
-if(!qty)return;
+let qty = prompt("Quantity?");
+if(!qty || isNaN(qty)) return;
 
-let price=(qty/1000)*30;
+let price = (qty/1000)*30;
 
-if(balance<price){
+if(balance < price){
 alert("Not enough balance!");
 return;
 }
 
-balance-=price;
-localStorage.setItem("bal",balance);
+balance -= price;
+localStorage.setItem("bal", balance);
 updateBal();
 
-let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+let orders = JSON.parse(localStorage.getItem("orders") || "[]");
 
 orders.push({
-name,qty,price,date:new Date().toLocaleString()
+name, qty, price, time: new Date().toLocaleString()
 });
 
-localStorage.setItem("orders",JSON.stringify(orders));
+localStorage.setItem("orders", JSON.stringify(orders));
 
-alert("Order placed!");
+alert("Order Success!");
 loadOrders();
 }
 
 // LOAD ORDERS
 function loadOrders(){
-let orders=JSON.parse(localStorage.getItem("orders")||"[]");
-let html="";
+let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+
+let html = "";
 
 orders.reverse().forEach(o=>{
-html+=`
-<div class="bg-white p-3 rounded-xl shadow mb-2">
+html += `
+<div style="background:#fff;padding:10px;margin-bottom:8px;border-radius:8px;">
 <b>${o.name}</b><br>
 Qty: ${o.qty}<br>
 Price: ${o.price} ৳<br>
-<small>${o.date}</small>
+<small>${o.time}</small>
 </div>
 `;
 });
 
-document.getElementById("orderList").innerHTML=html;
+document.getElementById("orderList").innerHTML = html;
 }
 
-// PAGE SWITCH
 function openPage(id){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("show"));
 document.getElementById(id).classList.add("show");
