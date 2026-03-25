@@ -18,14 +18,33 @@ body{background:#f1f5f9;}
 <body>
 
 <!-- LOGIN -->
-<div id="login" class="h-screen flex items-center justify-center">
+<div id="loginPage" class="h-screen flex items-center justify-center">
 <div class="bg-white p-6 rounded-xl shadow w-80 text-center">
-<h2 class="text-xl font-bold mb-4">Login Panel</h2>
 
-<input id="user" placeholder="Enter Gmail" class="w-full border p-2 mb-2 rounded">
-<input id="pass" type="password" placeholder="Password" class="w-full border p-2 mb-3 rounded">
+<h2 class="text-xl font-bold mb-4">Login</h2>
 
-<button onclick="login()" class="w-full bg-red-500 text-white py-2 rounded">Login</button>
+<input id="loginEmail" placeholder="Gmail" class="w-full border p-2 mb-2 rounded">
+<input id="loginPass" type="password" placeholder="Password" class="w-full border p-2 mb-3 rounded">
+
+<button onclick="login()" class="w-full bg-red-500 text-white py-2 rounded mb-2">Login</button>
+
+<p class="text-sm">No account? <span onclick="showRegister()" class="text-blue-500 cursor-pointer">Register</span></p>
+
+</div>
+</div>
+
+<!-- REGISTER -->
+<div id="registerPage" class="hidden h-screen flex items-center justify-center">
+<div class="bg-white p-6 rounded-xl shadow w-80 text-center">
+
+<h2 class="text-xl font-bold mb-4">Register</h2>
+
+<input id="regEmail" placeholder="Gmail" class="w-full border p-2 mb-2 rounded">
+<input id="regPass" type="password" placeholder="Password" class="w-full border p-2 mb-3 rounded">
+
+<button onclick="register()" class="w-full bg-green-500 text-white py-2 rounded mb-2">Register</button>
+
+<p class="text-sm">Already have account? <span onclick="showLogin()" class="text-blue-500 cursor-pointer">Login</span></p>
 
 </div>
 </div>
@@ -33,7 +52,6 @@ body{background:#f1f5f9;}
 <!-- APP -->
 <div id="app" class="hidden flex">
 
-<!-- Sidebar -->
 <div class="w-60 bg-white h-screen p-4 shadow">
 
 <h1 class="font-bold mb-4">ROCKY PANEL</h1>
@@ -46,14 +64,8 @@ body{background:#f1f5f9;}
 <button onclick="addBalance()" class="w-full bg-green-500 text-white py-2 rounded mb-2">Recharge</button>
 <button onclick="logout()" class="w-full bg-red-500 text-white py-2 rounded">Logout</button>
 
-<div class="mt-4">
-<div onclick="openPage('home')" class="p-2 bg-red-500 text-white rounded mb-2">Home</div>
-<div onclick="openPage('orders')" class="p-2 bg-gray-200 rounded">Orders</div>
 </div>
 
-</div>
-
-<!-- CONTENT -->
 <div class="flex-1">
 
 <div class="header text-white p-3 flex justify-between">
@@ -61,18 +73,14 @@ body{background:#f1f5f9;}
 <span id="topBal">0 ৳</span>
 </div>
 
-<!-- HOME -->
-<div id="home" class="page show p-5">
+<div class="p-5">
 
 <button onclick="order('Facebook')" class="bg-blue-500 text-white p-3 rounded w-full mb-2">Facebook Order</button>
 <button onclick="order('YouTube')" class="bg-red-500 text-white p-3 rounded w-full mb-2">YouTube Order</button>
 
-</div>
-
-<!-- ORDERS -->
-<div id="orders" class="page p-5">
-<h2 class="font-bold mb-2">Orders</h2>
+<h2 class="mt-4 font-bold">Orders</h2>
 <div id="orderList"></div>
+
 </div>
 
 </div>
@@ -80,32 +88,30 @@ body{background:#f1f5f9;}
 
 <script>
 
-// INIT
-let balance = parseInt(localStorage.getItem("bal")) || 0;
-let user = localStorage.getItem("user");
+// DATABASE (LOCAL)
+let users = JSON.parse(localStorage.getItem("users") || "{}");
+let currentUser = localStorage.getItem("currentUser");
 
-// AUTO LOGIN FIX
-if(user){
-document.getElementById("login").style.display="none";
-document.getElementById("app").classList.remove("hidden");
+// AUTO LOGIN
+if(currentUser){
+showApp();
 }
 
-// UPDATE BALANCE
-function updateBal(){
-document.getElementById("bal").innerText = balance + " ৳";
-document.getElementById("topBal").innerText = balance + " ৳";
+// SHOW PAGES
+function showRegister(){
+document.getElementById("loginPage").classList.add("hidden");
+document.getElementById("registerPage").classList.remove("hidden");
 }
-updateBal();
 
-// LOGIN FIX
-function login(){
-let email = document.getElementById("user").value.trim();
-let pass = document.getElementById("pass").value.trim();
-
-if(!email || !pass){
-alert("Fill all fields!");
-return;
+function showLogin(){
+document.getElementById("registerPage").classList.add("hidden");
+document.getElementById("loginPage").classList.remove("hidden");
 }
+
+// REGISTER
+function register(){
+let email = document.getElementById("regEmail").value.trim();
+let pass = document.getElementById("regPass").value.trim();
 
 if(!email.includes("@gmail.com")){
 alert("Enter valid Gmail!");
@@ -113,21 +119,76 @@ return;
 }
 
 if(pass.length < 4){
-alert("Password must be 4+");
+alert("Password 4+ required");
 return;
 }
 
-// SAVE
-localStorage.setItem("user", email);
-localStorage.setItem("pass", pass);
+if(users[email]){
+alert("Account already exists!");
+return;
+}
 
-location.reload(); // FIXED
+// SAVE USER
+users[email] = {
+password: pass,
+balance: 0,
+orders: []
+};
+
+localStorage.setItem("users", JSON.stringify(users));
+
+alert("Registration Success!");
+showLogin();
+}
+
+// LOGIN
+function login(){
+let email = document.getElementById("loginEmail").value.trim();
+let pass = document.getElementById("loginPass").value.trim();
+
+if(!users[email] || users[email].password !== pass){
+alert("Wrong login!");
+return;
+}
+
+localStorage.setItem("currentUser", email);
+showApp();
+}
+
+// SHOW APP
+function showApp(){
+document.getElementById("loginPage").style.display="none";
+document.getElementById("registerPage").style.display="none";
+document.getElementById("app").classList.remove("hidden");
+
+loadData();
 }
 
 // LOGOUT
 function logout(){
-localStorage.clear();
+localStorage.removeItem("currentUser");
 location.reload();
+}
+
+// LOAD USER DATA
+function loadData(){
+let user = users[currentUser];
+
+document.getElementById("bal").innerText = user.balance + " ৳";
+document.getElementById("topBal").innerText = user.balance + " ৳";
+
+let html = "";
+
+user.orders.reverse().forEach(o=>{
+html += `
+<div style="background:#fff;padding:10px;margin-top:5px;border-radius:8px;">
+<b>${o.name}</b><br>
+Qty: ${o.qty}<br>
+Price: ${o.price} ৳
+</div>`;
+});
+
+document.getElementById("orderList").innerHTML = html;
 }
 
 // ADD BALANCE
@@ -135,9 +196,10 @@ function addBalance(){
 let amount = prompt("Enter amount:");
 if(!amount || isNaN(amount)) return;
 
-balance += parseInt(amount);
-localStorage.setItem("bal", balance);
-updateBal();
+users[currentUser].balance += parseInt(amount);
+localStorage.setItem("users", JSON.stringify(users));
+
+loadData();
 }
 
 // ORDER
@@ -147,53 +209,22 @@ if(!qty || isNaN(qty)) return;
 
 let price = (qty/1000)*30;
 
-if(balance < price){
+if(users[currentUser].balance < price){
 alert("Not enough balance!");
 return;
 }
 
-balance -= price;
-localStorage.setItem("bal", balance);
-updateBal();
+users[currentUser].balance -= price;
 
-let orders = JSON.parse(localStorage.getItem("orders") || "[]");
-
-orders.push({
-name, qty, price, time: new Date().toLocaleString()
+users[currentUser].orders.push({
+name, qty, price
 });
 
-localStorage.setItem("orders", JSON.stringify(orders));
+localStorage.setItem("users", JSON.stringify(users));
 
 alert("Order Success!");
-loadOrders();
+loadData();
 }
-
-// LOAD ORDERS
-function loadOrders(){
-let orders = JSON.parse(localStorage.getItem("orders") || "[]");
-
-let html = "";
-
-orders.reverse().forEach(o=>{
-html += `
-<div style="background:#fff;padding:10px;margin-bottom:8px;border-radius:8px;">
-<b>${o.name}</b><br>
-Qty: ${o.qty}<br>
-Price: ${o.price} ৳<br>
-<small>${o.time}</small>
-</div>
-`;
-});
-
-document.getElementById("orderList").innerHTML = html;
-}
-
-function openPage(id){
-document.querySelectorAll(".page").forEach(p=>p.classList.remove("show"));
-document.getElementById(id).classList.add("show");
-}
-
-loadOrders();
 
 </script>
 
