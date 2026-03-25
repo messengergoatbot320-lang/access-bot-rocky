@@ -3,229 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rocky Premium Panel</title>
+<title>Rocky Panel</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
 <style>
-body{background:#f1f5f9;}
-.header{background:linear-gradient(135deg,#ef4444,#f97316);}
-.page{display:none;}
-.show{display:block;}
+body{
+  margin:0;
+  font-family:Poppins;
+  background:#f5f7ff;
+}
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+.hero{
+  text-align:center;
+  padding:60px 20px;
+}
+.hero h1{
+  font-size:40px;
+}
+.btn{
+  padding:15px 25px;
+  border:none;
+  border-radius:10px;
+  background:#ff2e4d;
+  color:#fff;
+  cursor:pointer;
+}
+.login-box{
+  max-width:400px;
+  margin:auto;
+  background:#fff;
+  padding:30px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
 </style>
+
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginPage" class="h-screen flex items-center justify-center">
-<div class="bg-white p-6 rounded-xl shadow w-80 text-center">
+<div class="container">
 
-<h2 class="text-xl font-bold mb-4">Login</h2>
-
-<input id="loginEmail" placeholder="Gmail" class="w-full border p-2 mb-2 rounded">
-<input id="loginPass" type="password" placeholder="Password" class="w-full border p-2 mb-3 rounded">
-
-<button onclick="login()" class="w-full bg-red-500 text-white py-2 rounded mb-2">Login</button>
-
-<p class="text-sm">No account? <span onclick="showRegister()" class="text-blue-500 cursor-pointer">Register</span></p>
-
-</div>
+<div class="hero">
+<h1>🚀 Rocky Social Panel</h1>
+<p>Facebook, TikTok, YouTube services</p>
+<button class="btn" onclick="scrollToLogin()">Get Started</button>
 </div>
 
-<!-- REGISTER -->
-<div id="registerPage" class="hidden h-screen flex items-center justify-center">
-<div class="bg-white p-6 rounded-xl shadow w-80 text-center">
+<div class="login-box" id="login">
+<h2>Login</h2>
 
-<h2 class="text-xl font-bold mb-4">Register</h2>
+<input type="text" id="user" placeholder="Username">
+<input type="password" id="pass" placeholder="Password">
 
-<input id="regEmail" placeholder="Gmail" class="w-full border p-2 mb-2 rounded">
-<input id="regPass" type="password" placeholder="Password" class="w-full border p-2 mb-3 rounded">
+<button class="btn" onclick="login()">Login</button>
 
-<button onclick="register()" class="w-full bg-green-500 text-white py-2 rounded mb-2">Register</button>
-
-<p class="text-sm">Already have account? <span onclick="showLogin()" class="text-blue-500 cursor-pointer">Login</span></p>
-
-</div>
+<p id="msg"></p>
 </div>
 
-<!-- APP -->
-<div id="app" class="hidden flex">
-
-<div class="w-60 bg-white h-screen p-4 shadow">
-
-<h1 class="font-bold mb-4">ROCKY PANEL</h1>
-
-<div class="bg-blue-100 p-3 rounded mb-3">
-<p>Balance</p>
-<h2 id="bal">0 ৳</h2>
-</div>
-
-<button onclick="addBalance()" class="w-full bg-green-500 text-white py-2 rounded mb-2">Recharge</button>
-<button onclick="logout()" class="w-full bg-red-500 text-white py-2 rounded">Logout</button>
-
-</div>
-
-<div class="flex-1">
-
-<div class="header text-white p-3 flex justify-between">
-<span>Dashboard</span>
-<span id="topBal">0 ৳</span>
-</div>
-
-<div class="p-5">
-
-<button onclick="order('Facebook')" class="bg-blue-500 text-white p-3 rounded w-full mb-2">Facebook Order</button>
-<button onclick="order('YouTube')" class="bg-red-500 text-white p-3 rounded w-full mb-2">YouTube Order</button>
-
-<h2 class="mt-4 font-bold">Orders</h2>
-<div id="orderList"></div>
-
-</div>
-
-</div>
 </div>
 
 <script>
-
-// DATABASE (LOCAL)
-let users = JSON.parse(localStorage.getItem("users") || "{}");
-let currentUser = localStorage.getItem("currentUser");
-
-// AUTO LOGIN
-if(currentUser){
-showApp();
+function scrollToLogin(){
+  document.getElementById("login").scrollIntoView({behavior:"smooth"});
 }
 
-// SHOW PAGES
-function showRegister(){
-document.getElementById("loginPage").classList.add("hidden");
-document.getElementById("registerPage").classList.remove("hidden");
-}
-
-function showLogin(){
-document.getElementById("registerPage").classList.add("hidden");
-document.getElementById("loginPage").classList.remove("hidden");
-}
-
-// REGISTER
-function register(){
-let email = document.getElementById("regEmail").value.trim();
-let pass = document.getElementById("regPass").value.trim();
-
-if(!email.includes("@gmail.com")){
-alert("Enter valid Gmail!");
-return;
-}
-
-if(pass.length < 4){
-alert("Password 4+ required");
-return;
-}
-
-if(users[email]){
-alert("Account already exists!");
-return;
-}
-
-// SAVE USER
-users[email] = {
-password: pass,
-balance: 0,
-orders: []
-};
-
-localStorage.setItem("users", JSON.stringify(users));
-
-alert("Registration Success!");
-showLogin();
-}
-
-// LOGIN
 function login(){
-let email = document.getElementById("loginEmail").value.trim();
-let pass = document.getElementById("loginPass").value.trim();
+  let u = document.getElementById("user").value;
+  let p = document.getElementById("pass").value;
 
-if(!users[email] || users[email].password !== pass){
-alert("Wrong login!");
-return;
+  if(u=="admin" && p=="1234"){
+    document.getElementById("msg").innerHTML="✅ Login Successful!";
+  } else {
+    document.getElementById("msg").innerHTML="❌ Wrong Username or Password";
+  }
 }
-
-localStorage.setItem("currentUser", email);
-showApp();
-}
-
-// SHOW APP
-function showApp(){
-document.getElementById("loginPage").style.display="none";
-document.getElementById("registerPage").style.display="none";
-document.getElementById("app").classList.remove("hidden");
-
-loadData();
-}
-
-// LOGOUT
-function logout(){
-localStorage.removeItem("currentUser");
-location.reload();
-}
-
-// LOAD USER DATA
-function loadData(){
-let user = users[currentUser];
-
-document.getElementById("bal").innerText = user.balance + " ৳";
-document.getElementById("topBal").innerText = user.balance + " ৳";
-
-let html = "";
-
-user.orders.reverse().forEach(o=>{
-html += `
-<div style="background:#fff;padding:10px;margin-top:5px;border-radius:8px;">
-<b>${o.name}</b><br>
-Qty: ${o.qty}<br>
-Price: ${o.price} ৳
-</div>`;
-});
-
-document.getElementById("orderList").innerHTML = html;
-}
-
-// ADD BALANCE
-function addBalance(){
-let amount = prompt("Enter amount:");
-if(!amount || isNaN(amount)) return;
-
-users[currentUser].balance += parseInt(amount);
-localStorage.setItem("users", JSON.stringify(users));
-
-loadData();
-}
-
-// ORDER
-function order(name){
-let qty = prompt("Quantity?");
-if(!qty || isNaN(qty)) return;
-
-let price = (qty/1000)*30;
-
-if(users[currentUser].balance < price){
-alert("Not enough balance!");
-return;
-}
-
-users[currentUser].balance -= price;
-
-users[currentUser].orders.push({
-name, qty, price
-});
-
-localStorage.setItem("users", JSON.stringify(users));
-
-alert("Order Success!");
-loadData();
-}
-
 </script>
 
 </body>
